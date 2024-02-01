@@ -54,8 +54,6 @@ services:
     hostname: ${POSTG_HOSTNAME}
     container_name: ${POSTG_CONTAINER}
     restart: always
-    volumes:
-      - postgData:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${POSTG_DB}
       POSTGRES_USER: ${POSTG_USER}
@@ -66,6 +64,8 @@ services:
     networks:
       - default
     profiles: ["postgres"]
+    volumes:
+      - /media/tomg55/Storage/postgres/volume:/var/lib/postgresql/data
 
   #-----------------------------------------------------------------------------------------------------------------------------
   #MongoDB Ignition Connection Settings
@@ -103,5 +103,5 @@ networks:
     driver: bridge
 volumes:
   ignData:
-  postgData:
+  postgresData:
   mongoData:
