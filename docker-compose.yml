@@ -1,0 +1,109 @@
+#docker compose --env-file variables.env up -d
+#docker compose --env-file variables.env down -v
+
+services:
+  ignitionMaker:
+    image: inductiveautomation/ignition:${IGN_VERSION}
+    container_name: ${IGN_CONTAINER}
+    restart: always
+    hostname: ${IGN_HOSTNAME}
+    user: 0:0
+    volumes:
+      # Gateway backup
+      #- ./gw-init/GatewayBackup.gwbk:/restore.gwbk
+      # Ignition data
+      - ignData:/usr/local/bin/ignition/data
+      #Ignition module seeds
+      #- ./module-init/MQTT-Engine-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Engine.modl
+      #- ./module-init/MQTT-Distributor-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Distributor.modl
+      #- ./module-init/MQTT-Transmission-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Transmission.modl
+      #- ./module-init/MongoDB Connector-module.modl:/usr/local/bin/ignition/user-lib/modules/MongoDB-Connector-module.modl
+    environment:
+      ACCEPT_IGNITION_EULA: 'Y'
+      GATEWAY_ADMIN_USERNAME: ${IGN_USERNAME}
+      GATEWAY_ADMIN_PASSWORD: ${IGN_PASSWORD}
+      IGNITION_EDITION: ${IGN_EDITION}
+      TZ: ${IGN_TZ}
+    ports:
+      - ${IGN_PORT}:8088
+    command: >
+      -n ${IGN_GATEWAY_NAME}
+      -h 80
+      -s 443
+      -a ${IGN_HOSTNAME:-ignition-demo}.${IGN_HOSTNAME:-localtest.me}
+      --
+      -Dignition.projects.scanFrequency=10
+      wrapper.java.initmemory=4096
+      -Dignition.allowunsignedmodules=true    
+     # -r /restore.gwbk 
+    networks:
+      - default
+      - net
+    profiles: ["ignition"]
+
+  #-----------------------------------------------------------------------------------------------------------------------------  
+  #Postgres Ignition Connection Settings
+      #Name: Postgres
+      #Username: ignition
+      #Password: ignition
+
+    #Gateway running on localhost:
+      #Connect URL: jdbc:postgresql://postgres.localtest.me:5430/postgres
+    #Gateway running in dockerstack:
+      #Connect URL: jdbc:postgresql://postgres/postgres  
+  postgresMaker:
+    image: postgres
+    hostname: ${POSTG_HOSTNAME}
+    container_name: ${POSTG_CONTAINER}
+    restart: always
+    volumes:
+      - postgData:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTG_DB}
+      POSTGRES_USER: ${POSTG_USER}
+      POSTGRES_PASSWORD: ${POSTG_PASSWORD}
+      TZ: ${IGN_TZ:-America/New_York}
+    ports:
+      - ${POSTG_PORT}:5432
+    networks:
+      - default
+    profiles: ["postgres"]
+
+  #-----------------------------------------------------------------------------------------------------------------------------
+  #MongoDB Ignition Connection Settings
+      #Name: LocalMongo
+      #Connection Scheme: mongodb
+      #Database: ignition
+        #needs to be setup via http://mongodb-express.localtest.me/
+      #Username: admin
+      #Password: password
+
+    #Gateway running on localhost:
+      #Connection Hosts: mongodb.localtest.me:27017
+    #Gateway running in dockerstack:
+      #Connection Hosts: mongodb:27017
+  mongodbMaker:
+    image: mongo
+    hostname: ${MONGO_HOSTNAME}
+    container_name: ${MONGO_CONTAINER}
+    restart: always
+    volumes:
+      - mongoData:/data/db
+    ports:
+      - ${MONGO_PORT:-27017}:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      TZ: ${IGN_TZ:-America/New_York}
+    networks:
+      - default
+    profiles: ["mongodb"]
+
+networks:
+  default:
+  net:
+    driver: bridge
+volumes:
+  ignData:
+  postgData:
+  mongoData:
