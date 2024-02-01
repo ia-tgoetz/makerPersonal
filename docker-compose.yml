@@ -14,10 +14,10 @@ services:
       # Ignition data
       - ignData:/usr/local/bin/ignition/data
       #Ignition module seeds
-      #- ./module-init/MQTT-Engine-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Engine.modl
-      #- ./module-init/MQTT-Distributor-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Distributor.modl
-      #- ./module-init/MQTT-Transmission-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Transmission.modl
-      #- ./module-init/MongoDB Connector-module.modl:/usr/local/bin/ignition/user-lib/modules/MongoDB-Connector-module.modl
+      - ./module-init/MongoDB Connector-module.modl:/usr/local/bin/ignition/user-lib/modules/MongoDB-Connector-module.modl
+      - ./module-init/MQTT-Engine-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Engine.modl
+      - ./module-init/MQTT-Distributor-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Distributor.modl
+      - ./module-init/MQTT-Transmission-signed.modl:/usr/local/bin/ignition/user-lib/modules/MQTT-Transmission.modl
     environment:
       ACCEPT_IGNITION_EULA: 'Y'
       GATEWAY_ADMIN_USERNAME: ${IGN_USERNAME}
@@ -43,14 +43,12 @@ services:
 
   #-----------------------------------------------------------------------------------------------------------------------------  
   #Postgres Ignition Connection Settings
-      #Name: Postgres
+      #Name: ignition
       #Username: ignition
       #Password: ignition
 
-    #Gateway running on localhost:
-      #Connect URL: jdbc:postgresql://postgres.localtest.me:5430/postgres
     #Gateway running in dockerstack:
-      #Connect URL: jdbc:postgresql://postgres/postgres  
+      #Connect URL: jdbc:postgresql://postgresMaker/ignition  
   postgresMaker:
     image: postgres
     hostname: ${POSTG_HOSTNAME}
@@ -79,9 +77,9 @@ services:
       #Password: password
 
     #Gateway running on localhost:
-      #Connection Hosts: mongodb.localtest.me:27017
+      #Connection Hosts: localhost:27007
     #Gateway running in dockerstack:
-      #Connection Hosts: mongodb:27017
+      #Connection Hosts: mongodbMaker:27017
   mongodbMaker:
     image: mongo
     hostname: ${MONGO_HOSTNAME}
@@ -90,7 +88,7 @@ services:
     volumes:
       - mongoData:/data/db
     ports:
-      - ${MONGO_PORT:-27017}:27017
+      - ${MONGO_PORT}:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
