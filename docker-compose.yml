@@ -46,9 +46,8 @@ services:
       #Name: ignition
       #Username: ignition
       #Password: ignition
-
-    #Gateway running in dockerstack:
       #Connect URL: jdbc:postgresql://postgresMaker/ignition  
+
   postgresMaker:
     image: postgres
     hostname: ${POSTG_HOSTNAME}
